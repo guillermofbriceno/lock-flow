@@ -19,6 +19,7 @@ def create_gate(type_str, inputs, out):
         Args:
             type_str (str): The logic gate name printed in the file.
             inputs (list): The wire inputs used as arguments for the gate.
+            out (str): The output wire being assigned
         Returns:
             str: A BENCH gate with wired inputs and outputs"""
 
@@ -56,3 +57,16 @@ def create_dmux(inp, out, sel, wires):
         dmux_bench.append(create_gate("AND", [inp] + and_inputs, out[i]))
 
     return dmux_bench
+
+def create_comp(in1, in2, out_bit, wires):
+    comp_bench = []
+    and_bits = []
+    for wire1, wire2 in zip(in1, in2):
+        out_xor = create_wire(wires)
+        out_not = create_wire(wires)
+        comp_bench.append(create_gate("XOR", [wire1, wire2], out_xor))
+        comp_bench.append(create_gate("NOT", [out_xor], out_not))
+        and_bits.append(out_not)
+
+    comp_bench.append(create_gate("AND", and_bits, out_bit))
+    return comp_bench
