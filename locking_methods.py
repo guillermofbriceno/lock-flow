@@ -18,7 +18,7 @@ class Bench:
         self.global_wires = []
         self.read_bench(bench_file)
     
-    def read_bench(bench_file):
+    def read_bench(self, bench_file):
         with open(bench_file, 'r') as bench:
             for line in bench:
                 line = line.replace(" ","").lower().rstrip()
@@ -29,17 +29,20 @@ class Bench:
                     self.input_wires.append(get_args(line)[0])
                     continue
                 
-                self.logic_lines.append(line)
-                set(self.global_wires).add(get_result(line))
+                if line != "":
+                    self.logic_lines.append(line)
+                    set(self.global_wires).add(get_result(line))
 
     def print_bench(self):
-        print("".join(self.key))
+        print("#Key: {}".format("".join(self.key)))
 
         for wire in self.input_wires:
-            print("INPUT({})".foramt(wire))
+            print("INPUT({})".format(wire))
 
         for wire in self.output_wires:
-            print("OUTPUT({})".foramt(wire))
+            print("OUTPUT({})".format(wire))
+
+        print("")
 
         for line in self.logic_lines:
             print(line.upper())
@@ -63,7 +66,7 @@ class SARLock(Bench):
         self.input_wires = self.input_wires + key_input_wires
     
         equals_bit = self.new_wire()
-        sarlock_comparator = create_comp(self.input_wires, self.key_input_wires, equals_bit)
+        sarlock_comparator = create_comp(self.input_wires, key_input_wires, equals_bit, self.global_wires)
 
         correct_key_logic_wires = []
         correct_key_logic = []
@@ -76,18 +79,21 @@ class SARLock(Bench):
                 correct_key_logic_wires.append(key_wire)
 
         correct_key_bit = self.new_wire()
-        correct_key_logic = correct_key_logic + self.new_gate("AND", correct_key_logic_wires, correct_key_bit)
+        correct_key_logic += self.new_gate("AND", correct_key_logic_wires, correct_key_bit)
         invert_correct_key_bit = self.new_wire()
-        correct_key_logic.append(self.new_gate("NOT",[correct_key_bit],invert_correct_key_bit))
+        correct_key_logic += self.new_gate("NOT",[correct_key_bit],invert_correct_key_bit)
         fault_wire = self.new_wire()
-        correct_key_logic.append(self.new_gate("NAND",[invert_correct_key_bit, equals_bit],fault_wire))
+        correct_key_logic += self.new_gate("NAND",[invert_correct_key_bit, equals_bit],fault_wire)
 
-        new_output_wires = generate_wires(self.global_wires,len(self.output_wires))
+        new_output_wires = []
         new_output_logic = []
-        for locked_output_wire old_output_wire pin zip(new_output_wires, self.output_wires):
-            new_output_logic.append(self.new_gate("AND",[fault_wire, old_output_wire],locked_output_wire))
+        for old_output_wire in self.output_wires:
+            locked_output_wire = self.new_wire()
+            new_output_wires.append(locked_output_wire)
+            new_output_logic += self.new_gate("AND",[fault_wire, old_output_wire],locked_output_wire)
 
         self.output_wires = new_output_wires
+
         locking_logic = sarlock_comparator + correct_key_logic + new_output_logic
         self.logic_lines += locking_logic
 
