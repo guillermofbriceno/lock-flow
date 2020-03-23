@@ -80,12 +80,12 @@ def create_comp(in1, in2, out_bit, wires):
         comp_bench.append(create_gate("NOT", [out_xor], out_not))
         and_bits.append(out_not)
 
-    comp_bench.append(create_gate("AND", and_bits, out_bit))
+    comp_bench.append(create_multi_gate("AND", 2,and_bits, out_bit, wires))
     return comp_bench
 
 def create_multi_gate(type_str, max_args, inputs, output, global_wires):
     """ Given a limited gate argument size, this function creates
-        a tree of gates with max_args number of inputs that copies the
+        a waterfall of gates with max_args number of inputs that copies the
         functionality of a gate with len(inputs) number of inputs
         Args:
             type_str     (str): The type of gate being cascaded.
