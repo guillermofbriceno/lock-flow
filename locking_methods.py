@@ -83,14 +83,16 @@ class SARLock(Bench):
         invert_correct_key_bit = self.new_wire()
         correct_key_logic += self.new_gate("NOT",[correct_key_bit],invert_correct_key_bit)
         fault_wire = self.new_wire()
-        correct_key_logic += self.new_gate("NAND",[invert_correct_key_bit, equals_bit],fault_wire)
+        inv_fault_wire = self.new_wire()
+        correct_key_logic += self.new_gate("NOT",[fault_wire],inv_fault_wire)
+        correct_key_logic += self.new_gate("NAND",[invert_correct_key_bit, equals_bit],inv_fault_wire)
 
         new_output_wires = []
         new_output_logic = []
         for old_output_wire in self.output_wires:
             locked_output_wire = self.new_wire()
             new_output_wires.append(locked_output_wire)
-            new_output_logic += self.new_gate("AND",[fault_wire, old_output_wire],locked_output_wire)
+            new_output_logic += self.new_gate("AND",[inv_fault_wire, old_output_wire],locked_output_wire)
 
         self.output_wires = new_output_wires
 
