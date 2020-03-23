@@ -80,7 +80,7 @@ def create_comp(in1, in2, out_bit, wires):
         comp_bench.append(create_gate("NOT", [out_xor], out_not))
         and_bits.append(out_not)
 
-    comp_bench.append(create_multi_gate("AND", 2,and_bits, out_bit, wires))
+    comp_bench += create_multi_gate("AND", 2,and_bits, out_bit, wires)
     return comp_bench
 
 def create_multi_gate(type_str, max_args, inputs, output, global_wires):
