@@ -2,7 +2,7 @@
 
 import argparse
 
-from locking_methods import *
+#from locking_methods import *
 from logic_units import *
 
 def main():
@@ -18,7 +18,7 @@ def main():
     #        }
 
     #obf_bench = methods[args.method]()
-    obf_bench = create_dmux("IN1", ["O0","O1","O2","O3"],["S0","S1"],[])
+    obf_bench = create_comp(["A0","A1"], ["B0","B1"],"O0",[])
     for line in obf_bench:
         print(line)
 

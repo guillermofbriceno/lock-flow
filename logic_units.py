@@ -1,4 +1,6 @@
 import random
+import itertools
+import math
 
 def create_wire(wires):
     """ Create a new wire. Ensures no wire conflicts and abstracts naming mechanism.
@@ -13,6 +15,16 @@ def create_wire(wires):
         if wire not in wires:
             wires.append(wire)
             return wire
+
+def generate_wires(wires, num_wires):
+    for i in range(num_wires):
+        wire = ""
+        while True:
+            wire = "WG{}".format(random.randint(0,999))
+            if wire not in wires:
+                wires.append(wire)
+                break
+        yield wire
 
 def create_gate(type_str, inputs, out):
     """ Create a BENCH logic gate
@@ -70,3 +82,30 @@ def create_comp(in1, in2, out_bit, wires):
 
     comp_bench.append(create_gate("AND", and_bits, out_bit))
     return comp_bench
+
+def create_multi_gate(type_str, max_args, inputs, output, global_wires):
+    """ Given a limited gate argument size, this function creates
+        a tree of gates with max_args number of inputs that copies the
+        functionality of a gate with len(inputs) number of inputs
+        Args:
+            type_str     (str): The type of gate being cascaded.
+            max_args     (int): Number of inputs desired per gate.
+            inputs       (lst): List of input wires.
+            output       (str): Output wire.
+            global_wires (lst): The global wire list.
+        Returns:
+            list: BENCH snippet of the multi-gate"""
+
+    multi_input_gate = []
+
+    inputs_grouped = [inputs[n:n+(max_args - 1)] for n in range(1, len(inputs), (max_args - 1))]
+    carry_wires = itertools.chain([inputs[0]], generate_wires(global_wires,math.ceil((len(inputs)-1)/(max_args-1) - 1)), [output])
+    curr_carry_wire = next(carry_wires)
+
+    for in_wires in inputs_grouped:
+        next_carry_wire = next(carry_wires)
+        gate = create_gate(type_str, [curr_carry_wire] + in_wires, next_carry_wire)
+        curr_carry_wire = next_carry_wire
+        multi_input_gate.append(gate)
+
+    return multi_input_gate
