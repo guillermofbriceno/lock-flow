@@ -13,3 +13,8 @@ Run the script with Python3:
 or make it executable to run it like `./lockinsert.py`:
 
 `chmod +x lockinsert.py`
+
+
+### Example usage
+
+`./lockinsert.py c17.bench -method sarlock`

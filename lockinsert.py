@@ -5,14 +5,14 @@ import argparse
 from locking_methods import *
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input_file', nargs='?')
-    parser.add_argument('method', nargs='?')
-    args = parser.parse_args()
-
     methods = {
         'sarlock':      SARLock
     }
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input_file', nargs='?')
+    parser.add_argument('-method', help="Locking method",choices=methods.keys(), required=True)
+    args = parser.parse_args()
 
     bench = methods[args.method](args.input_file)
     bench.lock()
