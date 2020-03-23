@@ -2,8 +2,7 @@
 
 import argparse
 
-#from locking_methods import *
-from logic_units import *
+from locking_methods import *
 
 def main():
     parser = argparse.ArgumentParser()
@@ -11,16 +10,13 @@ def main():
     parser.add_argument('method', nargs='?')
     args = parser.parse_args()
 
-    #methods = {
-    #        'sarlock':      sarlock,
-    #        'sarlock+sll':  sarlock_sll,
-    #        'naive':        naive
-    #        }
+    methods = {
+        'sarlock':      SARLock
+    }
 
-    #obf_bench = methods[args.method]()
-    obf_bench = create_comp(["A0","A1"], ["B0","B1"],"O0",[])
-    for line in obf_bench:
-        print(line)
+    bench = methods[args.method](args.input_file)
+    bench.lock()
+    bench.print_bench()
 
 if __name__ == "__main__":
     main()
