@@ -37,10 +37,10 @@ class Bench:
         print("#Key: {}".format("".join(self.key)))
 
         for wire in self.input_wires:
-            print("INPUT({})".format(wire))
+            print("INPUT({})".format(wire.upper()))
 
         for wire in self.output_wires:
-            print("OUTPUT({})".format(wire))
+            print("OUTPUT({})".format(wire.upper()))
 
         print("")
 
@@ -62,7 +62,11 @@ class SARLock(Bench):
         locking_logic = []
 
         self.key = [str(random.randint(0,1)) for i in range(len(self.input_wires))]
-        key_input_wires = list(generate_wires(self.global_wires, len(self.input_wires)))
+        key_input_generator = generate_wires(self.global_wires, len(self.input_wires))
+        key_input_wires = []
+        for key_wire in key_input_generator:
+            key_input_wires.append("K{}".format(key_wire))
+
         self.input_wires = self.input_wires + key_input_wires
     
         equals_bit = self.new_wire()
