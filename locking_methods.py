@@ -62,10 +62,11 @@ class SARLock(Bench):
         locking_logic = []
 
         self.key = [str(random.randint(0,1)) for i in range(len(self.input_wires))]
-        key_input_generator = generate_wires(self.global_wires, len(self.input_wires))
-        key_input_wires = []
-        for key_wire in key_input_generator:
-            key_input_wires.append("K{}".format(key_wire))
+        #key_input_generator = generate_wires(self.global_wires, len(self.input_wires))
+        #key_input_wires = []
+        #for key_wire in key_input_generator:
+        #    key_input_wires.append("K{}".format(key_wire))
+        key_input_wires = ["K{}".format(i) for i in range(len(self.input_wires))].reverse()
 
         self.input_wires = self.input_wires + key_input_wires
     
@@ -85,25 +86,21 @@ class SARLock(Bench):
         correct_key_bit = self.new_wire()
         correct_key_logic += self.new_gate("AND", correct_key_logic_wires, correct_key_bit)
         invert_correct_key_bit = self.new_wire()
-        correct_key_logic += self.new_gate("NOT",[correct_key_bit],invert_correct_key_bit)
+        correct_key_logic.append(create_gate("NOT",[correct_key_bit],invert_correct_key_bit))
         fault_wire = self.new_wire()
-        inv_fault_wire = self.new_wire()
-        correct_key_logic += self.new_gate("NOT",[fault_wire],inv_fault_wire)
-        correct_key_logic += self.new_gate("NAND",[invert_correct_key_bit, equals_bit],inv_fault_wire)
+        correct_key_logic += self.new_gate("AND",[invert_correct_key_bit, equals_bit],fault_wire)
+        #inv_fault_wire = self.new_wire()
+        #correct_key_logic.append(create_gate("NOT",[fault_wire],inv_fault_wire))
 
         new_output_wires = []
         new_output_logic = []
-        for old_output_wire in self.output_wires:
-            locked_output_wire = self.new_wire()
+        for old_output_wire, num in zip(self.output_wires, range(len(self.output_wires))):
+            #locked_output_wire = self.new_wire()
+            locked_output_wire = "O{}".format(num)
             new_output_wires.append(locked_output_wire)
-            new_output_logic += self.new_gate("AND",[inv_fault_wire, old_output_wire],locked_output_wire)
+            new_output_logic += self.new_gate("XOR",[fault_wire, old_output_wire],locked_output_wire)
 
         self.output_wires = new_output_wires
 
         locking_logic = sarlock_comparator + correct_key_logic + new_output_logic
         self.logic_lines += locking_logic
-
-
-
-
-
