@@ -66,7 +66,7 @@ class SARLock(Bench):
         #key_input_wires = []
         #for key_wire in key_input_generator:
         #    key_input_wires.append("K{}".format(key_wire))
-        key_input_wires = ["K{}".format(i) for i in range(len(self.input_wires))].reverse()
+        key_input_wires = ["K{}".format(i) for i in range(len(self.input_wires))][::-1]
 
         self.input_wires = self.input_wires + key_input_wires
     
