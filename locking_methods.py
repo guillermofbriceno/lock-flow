@@ -16,6 +16,7 @@ class Bench:
         self.output_wires = []
         self.logic_lines = []
         self.global_wires = []
+        self.num_keys = 0
         self.read_bench(bench_file)
     
     def read_bench(self, bench_file):
@@ -35,6 +36,7 @@ class Bench:
 
     def print_bench(self):
         print("#Key: {}".format("".join(self.key)))
+        print('#Number of keys: {}'.format(self.num_keys))
 
         for wire in self.input_wires:
             print("INPUT({})".format(wire.upper()))
@@ -66,9 +68,11 @@ class SARLock(Bench):
         #key_input_wires = []
         #for key_wire in key_input_generator:
         #    key_input_wires.append("K{}".format(key_wire))
-        key_input_wires = ["K{}".format(i) for i in range(len(self.input_wires))][::-1]
+        key_input_wires = ["probe_out0[{}]".format(i) for i in range(len(self.input_wires))][::-1]
+        self.num_keys = len(key_input_wires)
 
-        self.input_wires = self.input_wires + key_input_wires
+        #self.input_wires = self.input_wires + key_input_wires
+        self.input_wires = self.input_wires
     
         equals_bit = self.new_wire()
         sarlock_comparator = create_comp(self.input_wires, key_input_wires, equals_bit, self.global_wires)
