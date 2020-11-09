@@ -8,10 +8,13 @@ target_file = basepath = path = path1 = path2 = ""
 
 def clean_env(arg):
     for file in os.listdir(basepath + "/uncc_automation"):
-        if file == ".synopsis_dc.setup" or file == "ctrl.v":
+        if file == ".synopsys_dc.setup" or file == "ctrl.v":
             continue
-        #os.remove(file)
-        print("Removing:", file)
+        print("Removing:", "uncc_automation/" + file)
+        if os.path.isfile(basepath + "/uncc_automation/" + file):
+            os.remove(basepath + "/uncc_automation/" + file)
+        if os.path.isdir(basepath + "/uncc_automation/" + file):
+            shutil.rmtree(basepath + "/uncc_automation/" + file)
 
 def config_synthesis(file_withExtension):
     print("file_withExtension:", file_withExtension)
@@ -27,9 +30,12 @@ def config_synthesis(file_withExtension):
 def dc_synthesis(arg):
     os.chdir(path)
     os.system("dc_shell -f synthesis.tcl")
-    with open("synthesized_RTL.v", 'rw') as file:
+    filedata = None
+    with open("synthesized_RTL.v", 'r') as file:
         filedata = file.read()
         filedata = filedata.replace('x',"X")
+
+    with open("synthesized_RTL.v", 'w') as file:
         file.write(filedata) 
 
 def pre_insert_tb(arg):
@@ -78,51 +84,42 @@ def do_all():
     post_insert_tb()
     vivado_final()
 
-def main():
-    locking_methods = ["sarlock", "random"]
+locking_methods = ["sarlock", "random"]
 
-    extensions = {
-            'v': 'verilog',
-            'vhd': 'vhdl',
-            'bench': 'verilog'
-            }
-    steps = {
-            'clean_env': clean_env,
-            'config_synthesis': config_synthesis,
-            'dc_synthesis': dc_synthesis,
-            'pre_insert_tb': pre_insert_tb,
-            'vivado_pre_tb': vivado_pre_tb,
-            'lock_insertion': lock_insertion,
-            'post_insert_tb': post_insert_tb,
-            'vivado_final': vivado_final,
-            'all': do_all
+extensions = {
+    'v': 'verilog',
+    'vhd': 'vhdl',
+    'bench': 'verilog'
     }
+steps = {
+    'clean_env': clean_env,
+    'config_synthesis': config_synthesis,
+    'dc_synthesis': dc_synthesis,
+    'pre_insert_tb': pre_insert_tb,
+    'vivado_pre_tb': vivado_pre_tb,
+    'lock_insertion': lock_insertion,
+    'post_insert_tb': post_insert_tb,
+    'vivado_final': vivado_final,
+    'all': do_all
+}
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('bpath', nargs='?')
-    parser.add_argument('-insert_method', help="Locking method", choices=locking_methods, required=True)
-    parser.add_argument('-step', help="Automation step to execute", choices=steps.keys())
-    args = parser.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument('bpath', nargs='?')
+parser.add_argument('-insert_method', help="Locking method", choices=locking_methods, required=True)
+parser.add_argument('-step', help="Automation step to execute", choices=steps.keys())
+args = parser.parse_args()
 
-    global basepath
-    global path
-    global path1
-    global path2
-    global target_file
-    basepath = args.bpath
-    path = basepath + "uncc_automation"
-    path1 = basepath + "post_insertion_verilog"
-    path2 = basepath + "vivado_Testing_pre"
+basepath = args.bpath
+path = basepath + "uncc_automation"
+path1 = basepath + "post_insertion_verilog"
+path2 = basepath + "vivado_Testing_pre"
 
-    shutil.copy('abc.rc', path)
-    shutil.copy('cadence.genlib', path)
+shutil.copy('abc.rc', path)
+shutil.copy('cadence.genlib', path)
 
-    for file in os.listdir(path):
-        extension = file.split('.', 1)[-1]
-        if extension in extensions.keys():
-            target_file = path
-            steps[args.step](file)
-
-if __name__ == "__main__":
-    main()
+for file in os.listdir(path):
+    extension = file.split('.', 1)[-1]
+    if extension in extensions.keys():
+        target_file = path
+        steps[args.step](file)
 
