@@ -6,7 +6,8 @@ from locking_methods import *
 
 def main():
     methods = {
-        'sarlock':      SARLock
+        'sarlock':      SARLock,
+        'fbki':         FBKI
     }
 
     parser = argparse.ArgumentParser()
