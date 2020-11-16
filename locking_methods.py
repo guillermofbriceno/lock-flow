@@ -10,7 +10,7 @@ def get_result(line):
     return line[:line.find('=')] if '=' in line else None
 
 def get_func(line):
-    return line[line.find('=')+1:] if '=' in line else None
+    return line[line.find('=')+1:line.find('(')] if '=' in line else None
 
 class Bench:
     def __init__(self, bench_file):
@@ -70,7 +70,8 @@ class FBKI(Bench):
         self.num_keys = int((len(hope_log.wire_dict) - len(self.output_wires)) / 2)
         #self.num_keys = 2
         self.key = [str(random.randint(0,1)) for i in range(self.num_keys)]
-        key_input_wires = ["probe_out0[{}]".format(i) for i in range(self.num_keys)][::-1]
+        key_input_wires = ["K{}".format(i) for i in range(self.num_keys)][::-1]
+        self.input_wires += key_input_wires
         
         high_fault_wires = hope_log.get_best_wires(self.num_keys, self.output_wires)
         random.shuffle(high_fault_wires)
@@ -88,17 +89,25 @@ class FBKI(Bench):
 
         new_logic_lines = []
         for gate in self.logic_lines:
-            wire_idx = 0
+            result = get_result(gate)
+            args = get_args(gate)
+            func = get_func(gate)
             for wire, idx in zip(high_fault_wires, range(len(high_fault_wires))):
-                if wire[0] in gate:
-                    wire_idx = idx
+                if wire[0] in args:
+                    if (high_fault_wires[idx][0] == high_fault_wires[idx][1]):
+                        args = [arg.replace(high_fault_wires[idx][0], new_fault_wires[idx]) for arg in args]
+                    elif result == high_fault_wires[idx][1]:
+                        args = [arg.replace(high_fault_wires[idx][0], new_fault_wires[idx]) for arg in args]
 
-            if (high_fault_wires[wire_idx][0] == high_fault_wires[wire_idx][1]):
-                gate = gate.replace(high_fault_wires[wire_idx][0], new_fault_wires[wire_idx])
-            elif get_result(gate) == high_fault_wires[wire_idx][1]:
-                gate = gate.replace(high_fault_wires[wire_idx][0], new_fault_wires[wire_idx])
+            new_logic_lines += self.new_gate(func, args, result)
 
-            new_logic_lines.append(gate)
+
+            #if (high_fault_wires[wire_idx][0] == high_fault_wires[wire_idx][1]):
+            #    gate = gate.replace(high_fault_wires[wire_idx][0], new_fault_wires[wire_idx])
+            #elif get_result(gate) == high_fault_wires[wire_idx][1]:
+            #    gate = gate.replace(high_fault_wires[wire_idx][0], new_fault_wires[wire_idx])
+
+            #new_logic_lines.append(gate)
 
         self.logic_lines = new_logic_lines + locking_logic
 
@@ -114,10 +123,10 @@ class SARLock(Bench):
         #key_input_wires = []
         #for key_wire in key_input_generator:
         #    key_input_wires.append("K{}".format(key_wire))
-        key_input_wires = ["probe_out0[{}]".format(i) for i in range(len(self.input_wires))][::-1]
+        key_input_wires = ["K{}".format(i) for i in range(len(self.input_wires))][::-1]
         self.num_keys = len(key_input_wires)
 
-        #self.input_wires += key_input_wires
+        self.input_wires += key_input_wires
     
         equals_bit = self.new_wire()
         sarlock_comparator = create_comp(self.input_wires, key_input_wires, equals_bit, self.global_wires)
