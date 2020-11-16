@@ -96,6 +96,9 @@ def create_multi_gate(type_str, max_args, inputs, output, global_wires):
         Returns:
             list: BENCH snippet of the multi-gate"""
 
+    if len(inputs) == 1:
+        return [create_gate(type_str, inputs, output)]
+
     multi_input_gate = []
 
     inputs_grouped = [inputs[n:n+(max_args - 1)] for n in range(1, len(inputs), (max_args - 1))]
