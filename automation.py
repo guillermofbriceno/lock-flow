@@ -1,3 +1,5 @@
+#!/bin/python3
+
 import os
 import fileinput
 import shutil
@@ -54,10 +56,24 @@ def lock_insertion(arg):
     os.chdir(path)
     p = Popen(['abc'], stdout=PIPE, stdin=PIPE, stderr=STDOUT,cwd=path)
     grep_stdout = p.communicate(input=b'rlibc\nrv -m synthesized_RTL.v\nstrash\nmap\nstrash\nwrite_bench -l outputBL.bench\nquit')[0]
+
+    if args.insert_method == "fbki":
+        p = Popen(['abc'], stdout=PIPE, stdin=PIPE, stderr=STDOUT,cwd=path)
+        grep_stdout = p.communicate(input=b'rlibc\nrb outputBL.bench\nwv out_nolibs.v\nquit')[0]
+
+        os.system('tmax -nogui -tcl ../tmax.tcl')
+        os.system("python3 ../tmax_hope_reformat.py > formatted_tmax.log")
+        os.chdir(basepath)
+        os.system("hope -N insertion/hope.log -F insertion/hope.log -t uncc_automation/formatted_tmax.log uncc_automation/outputBL.bench")
+
+    os.chdir(path)
+    #p = Popen(['abc'], stdout=PIPE, stdin=PIPE, stderr=STDOUT,cwd=path)
+    #grep_stdout = p.communicate(input=b'rlibc\nrv -m synthesized_RTL.v\nstrash\nmap\nstrash\nwrite_bench -l outputBL.bench\nquit')[0]
     os.system("cp outputBL.bench ../insertion/\ncd ../insertion/\n./lockinsert.py outputBL.bench -method {} > out.bench\ncp out.bench ../post_insertion_verilog/\ncp out.bench ../post_insertion_testbench/ ".format(args.insert_method))
     os.chdir(path1)
     p = Popen(['abc'], stdout=PIPE, stdin=PIPE, stderr=STDOUT,cwd=path1)
     grep_stdout = p.communicate(input=b'rlibc\nrb out.bench\nwv out.v\nquit')[0]
+    os.system("python3 " + basepath + "/post_insertion_verilog/insert_vio.py")
 
 def post_insert_tb(arg):
     os.system("cp out.v ../post_insertion_testbench/.")
@@ -72,8 +88,7 @@ def vivado_final(arg):
 
 def flash_fpga(arg):
     os.chdir("post_insertion_verilog")
-    os.system("vivado -mode tcl")
-    #insert keys here
+    os.system("vivado -mode tcl -source vivado.tcl")
 
 def do_all():
     config_synthesis()
@@ -84,7 +99,7 @@ def do_all():
     post_insert_tb()
     vivado_final()
 
-locking_methods = ["sarlock", "random"]
+locking_methods = ["sarlock", "random", "fbki"]
 
 extensions = {
     'v': 'verilog',
@@ -100,6 +115,7 @@ steps = {
     'lock_insertion': lock_insertion,
     'post_insert_tb': post_insert_tb,
     'vivado_final': vivado_final,
+    'flash_fpga': flash_fpga,
     'all': do_all
 }
 
@@ -117,9 +133,11 @@ path2 = basepath + "vivado_Testing_pre"
 shutil.copy('abc.rc', path)
 shutil.copy('cadence.genlib', path)
 
-for file in os.listdir(path):
-    extension = file.split('.', 1)[-1]
-    if extension in extensions.keys():
-        target_file = path
-        steps[args.step](file)
+steps[args.step]("ctrl.v")
+
+#for file in os.listdir(path):
+#    extension = file.split('.', 1)[-1]
+#    if extension in extensions.keys():
+#        target_file = path
+#        steps[args.step](file)
 
