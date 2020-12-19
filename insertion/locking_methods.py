@@ -64,7 +64,7 @@ class FBKI(Bench):
     def lock(self):
         locking_logic = []
 
-        hope_log = HopeLog("tests/hope.log")
+        hope_log = HopeLog("hope.log")
         hope_log.process_log()
         
         self.num_keys = int((len(hope_log.wire_dict) - len(self.output_wires)) / 2)
@@ -162,3 +162,4 @@ class SARLock(Bench):
 
         locking_logic = sarlock_comparator + correct_key_logic + new_output_logic
         self.logic_lines += locking_logic
+
