@@ -11,3 +11,15 @@ Designed by the UNCC FLOW Senior Design project team.
 Run the script with Python3:
 
 `python3 automation.py -step <step> -method <method> <project path>`
+
+## Citation
+
+@INPROCEEDINGS{9322831,
+  author={W. {Halaburda} and G. {Briceno} and W. {Obey} and N. N. {BouSaba} and F. {Saqib}},
+  booktitle={2020 IEEE 17th International Conference on Smart Communities: Improving Quality of Life Using ICT, IoT and AI (HONET)}, 
+  title={A Novel User-Friendly Automated Framework for FPGA Design Logic Encryption}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={241-243},
+  doi={10.1109/HONET50430.2020.9322831}}
